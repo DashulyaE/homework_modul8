@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Сourse(models.Model):
+class Course(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название курса")
     preview = models.ImageField(
         upload_to="materials/course/",
@@ -18,7 +18,7 @@ class Сourse(models.Model):
 
 
 class Lesson(models.Model):
-    course = models.ForeignKey(Сourse, on_delete=models.SET_NULL, null=True, related_name='lessons', verbose_name="Курс")
+    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, related_name='lessons', verbose_name="Курс")
     name = models.CharField(max_length=100, verbose_name="Название урока")
     preview = models.ImageField(
         upload_to="materials/lesson/",
