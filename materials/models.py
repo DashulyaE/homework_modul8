@@ -28,7 +28,8 @@ class Lesson(models.Model):
         help_text="Превью урока",
     )
     description = models.TextField(blank=True, null=True, verbose_name="Описание урока")
-    video_link = models.URLField()
+    video_link = models.URLField(blank=True,null=True,)
+
     class Meta:
         verbose_name = "Урок"
         verbose_name_plural = "Уроки"
