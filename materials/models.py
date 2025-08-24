@@ -2,6 +2,8 @@ from django.db import models
 
 
 class Course(models.Model):
+    """Модель Курс"""
+
     name = models.CharField(max_length=100, verbose_name="Название курса")
     preview = models.ImageField(
         upload_to="materials/course/",
@@ -18,7 +20,15 @@ class Course(models.Model):
 
 
 class Lesson(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, related_name='lessons', verbose_name="Курс")
+    """Модель Урок"""
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="lessons",
+        verbose_name="Курс",
+    )
     name = models.CharField(max_length=100, verbose_name="Название урока")
     preview = models.ImageField(
         upload_to="materials/lesson/",
@@ -28,7 +38,10 @@ class Lesson(models.Model):
         help_text="Превью урока",
     )
     description = models.TextField(blank=True, null=True, verbose_name="Описание урока")
-    video_link = models.URLField(blank=True,null=True,)
+    video_link = models.URLField(
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         verbose_name = "Урок"
