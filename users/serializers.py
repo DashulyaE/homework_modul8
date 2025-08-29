@@ -11,6 +11,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = "__all__"
 
+
 class UserSerializer(ModelSerializer):
     """Сериалайзер для модели Пользователь"""
 
