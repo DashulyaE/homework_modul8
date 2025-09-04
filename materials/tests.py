@@ -1,8 +1,8 @@
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 
-from materials.models import Course, Lesson
+from materials.models import Course, Lesson, CourseSubscription
 from users.models import User
 
 
@@ -172,3 +172,45 @@ class LessonTestCase(APITestCase):
         self.assertEqual(
             data, result
         )
+
+
+class SubscriptionViewTest(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create(email="admin@test.ru")
+        self.course = Course.objects.create(name="Курс 1", description="Описание курса 1", owner=self.user)
+        self.lesson = Lesson.objects.create(course=self.course, name="Урок 1", owner=self.user)
+        self.client.force_authenticate(user=self.user)
+
+    def test_subscribe_to_course(self):
+        url = reverse("materials:course-subscribe", args=(self.course.pk,))
+        response = self.client.post(url)
+        data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['message'], 'подписка добавлена')
+        self.assertTrue(CourseSubscription.objects.filter(user=self.user, course=self.course).exists())
+
+    def test_unsubscribe_from_course(self):
+        # сначала подписываемся
+        CourseSubscription.objects.create(user=self.user, course=self.course)
+        url = reverse("materials:course-subscribe", args=(self.course.pk,))
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['message'], 'подписка удалена')
+        self.assertFalse(CourseSubscription.objects.filter(user=self.user, course=self.course).exists())
+
+    def test_delete_subscription_when_exists(self):
+        CourseSubscription.objects.create(user=self.user, course=self.course)
+        url = reverse("materials:course-subscribe", args=(self.course.pk,))
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['message'], 'подписка удалена')
+        self.assertFalse(CourseSubscription.objects.filter(user=self.user, course=self.course).exists())
+
+    def test_delete_subscription_when_not_exists(self):
+        url = reverse("materials:course-subscribe", args=(self.course.pk,))
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['message'], 'подписка не найдена')
+
