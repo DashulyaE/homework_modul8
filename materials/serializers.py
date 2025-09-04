@@ -2,6 +2,7 @@ from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import ModelSerializer
 
 from materials.models import Course, Lesson
+from materials.validators import validate_link
 
 
 class CourseSerializer(ModelSerializer):
@@ -19,6 +20,11 @@ class LessonSerializer(ModelSerializer):
         model = Lesson
         fields = "__all__"
 
+    def validate(self, data):
+        video_link = data.get('video_link')
+        if video_link:
+            validate_link(video_link)
+        return data
 
 class CourseDetailSerializer(ModelSerializer):
     """Сериализатор для одного объекта модели Курс"""
