@@ -62,3 +62,22 @@ class Lesson(models.Model):
     class Meta:
         verbose_name = "Урок"
         verbose_name_plural = "Уроки"
+
+
+class CourseSubscription(models.Model):
+    """Модель Подсписка на курс """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="course_subscriptions",
+    )
+    course = models.ForeignKey(
+        "Course", on_delete=models.CASCADE, related_name="subscriptions"
+    )
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "course")
+        verbose_name = "Подписка на курс"
+        verbose_name_plural = "Подписки на курсы"
