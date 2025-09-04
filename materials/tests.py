@@ -66,8 +66,27 @@ class CourseTestCase(APITestCase):
     def test_course_list(self):
         url = reverse("materials:course-list")
         response = self.client.get(url)
+        data = response.json()
+        result = {
+            "count": 1,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "id": self.course.pk,
+                    "is_subscribed": False,
+                    "name": self.course.name,
+                    "preview": None,
+                    "description": self.course.description,
+                    "owner": self.user.pk
+                }
+            ]
+        }
         self.assertEqual(
             response.status_code, status.HTTP_200_OK
+        )
+        self.assertEqual(
+            data, result
         )
 
 
