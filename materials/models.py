@@ -65,7 +65,7 @@ class Lesson(models.Model):
 
 
 class CourseSubscription(models.Model):
-    """Модель Подсписка на курс """
+    """Модель Подсписка на курс"""
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

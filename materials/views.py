@@ -91,11 +91,11 @@ class CourseSubscriptionView(APIView):
         if subs_item.exists():
             # Удаляем подписку
             subs_item.delete()
-            message = 'подписка удалена'
+            message = "подписка удалена"
         else:
             # Создаем подписку
             CourseSubscription.objects.create(user=user, course=course_item)
-            message = 'подписка добавлена'
+            message = "подписка добавлена"
 
         return Response({"message": message})
 
@@ -105,7 +105,7 @@ class CourseSubscriptionView(APIView):
         subs_item = CourseSubscription.objects.filter(user=user, course=course_item)
         if subs_item.exists():
             subs_item.delete()
-            message = 'подписка удалена'
+            message = "подписка удалена"
         else:
-            message = 'подписка не найдена'
+            message = "подписка не найдена"
         return Response({"message": message})
