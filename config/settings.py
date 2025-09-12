@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "materials",
     "django_filters",
     "rest_framework_simplejwt",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -138,6 +139,15 @@ CELERY_TASK_TIME_LIMIT = 30 * 60
 
 CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+CELERY_BEAT_SCHEDULE = {
+    'check_last_login': {
+        'task': 'materials.tasks.check_last_login',
+        'schedule': timedelta(days=1),
+    },
+}
+
 
 EMAIL_HOST = "smtp.yandex.ru"
 EMAIL_PORT = 465
