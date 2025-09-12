@@ -18,6 +18,7 @@ from materials.serializers import (
     LessonSerializer,
     CourseDetailSerializer,
 )
+from materials.tasks import add
 from users.permissions import IsModer, IsOwner
 
 
@@ -92,10 +93,12 @@ class CourseSubscriptionView(APIView):
             # Удаляем подписку
             subs_item.delete()
             message = "подписка удалена"
+            add.delay()
         else:
             # Создаем подписку
             CourseSubscription.objects.create(user=user, course=course_item)
             message = "подписка добавлена"
+            add.delay()
 
         return Response({"message": message})
 
@@ -106,6 +109,8 @@ class CourseSubscriptionView(APIView):
         if subs_item.exists():
             subs_item.delete()
             message = "подписка удалена"
+            add.delay()
         else:
             message = "подписка не найдена"
+            add.delay()
         return Response({"message": message})
