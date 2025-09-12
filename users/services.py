@@ -4,12 +4,11 @@ from config.settings import STRIPE_API_KEY
 
 stripe.api_key = STRIPE_API_KEY
 
+
 def create_stripe_product(pay):
     """Создает продукт в страйпе"""
 
-    title_product = (
-        f"{pay.paid_course}" if pay.paid_course else f"{pay.paid_lesson}"
-    )
+    title_product = f"{pay.paid_course}" if pay.paid_course else f"{pay.paid_lesson}"
     stripe_product = stripe.Product.create(name=f"{title_product}")
     return stripe_product.get("id")
 

@@ -13,7 +13,7 @@ from users.models import User
 def send_update_curse(user_email, course_name):
     """Отправка письма письма пользователю об изменениях в курсе"""
 
-    subject = f'Обновление курса: {course_name}'
+    subject = f"Обновление курса: {course_name}"
     message = f'Здравствуйте! В курсе "{course_name}" произошли обновления. Подробнее на сайте.'
     send_mail(subject, message, EMAIL_HOST_USER, [user_email])
 
