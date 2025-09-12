@@ -18,7 +18,7 @@ from materials.serializers import (
     LessonSerializer,
     CourseDetailSerializer,
 )
-from materials.tasks import add
+from materials.tasks import send_update_curse
 from users.permissions import IsModer, IsOwner
 
 
@@ -36,6 +36,12 @@ class СourseViewSet(ModelViewSet):
         course = serializer.save()
         course.owner = self.request.user
         course.save()
+
+    def perform_update(self, serializer):
+        course = serializer.save()
+        subscriptions = CourseSubscription.objects.filter(course=course)
+        for sub in subscriptions:
+            send_update_curse.delay(sub.user.email, course.name)
 
     def get_permissions(self):
         if self.action == "create":
@@ -93,12 +99,10 @@ class CourseSubscriptionView(APIView):
             # Удаляем подписку
             subs_item.delete()
             message = "подписка удалена"
-            add.delay()
         else:
             # Создаем подписку
             CourseSubscription.objects.create(user=user, course=course_item)
             message = "подписка добавлена"
-            add.delay()
 
         return Response({"message": message})
 
@@ -109,8 +113,6 @@ class CourseSubscriptionView(APIView):
         if subs_item.exists():
             subs_item.delete()
             message = "подписка удалена"
-            add.delay()
         else:
             message = "подписка не найдена"
-            add.delay()
         return Response({"message": message})
