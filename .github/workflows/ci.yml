@@ -103,5 +103,4 @@ jobs:
             sudo chown -R $(whoami) ${{ secrets.DEPLOY_DIR }}
             cd ${{ secrets.DEPLOY_DIR }}
             git pull origin main
-            # ваши команды перезапуска сервиса или контейнера
           EOF
