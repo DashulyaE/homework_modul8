@@ -2,8 +2,6 @@ name: Django CI/CD
 
 on:
   push:
-    branches:
-      - main
 
 jobs:
   test:
@@ -85,7 +83,3 @@ jobs:
             # Обновление кода на сервере
             cd ${{ secrets.DEPLOY_DIR }}
             git pull origin main
-
-            # Обновление виртуального окружения и зависимостей
-            source venv/bin/activate
-            poetry install --no-root
