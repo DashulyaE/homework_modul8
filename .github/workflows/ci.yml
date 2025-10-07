@@ -101,5 +101,6 @@ jobs:
             set -e
             echo "Starting deployment..."
             cd ${{ secrets.DEPLOY_DIR }}
+            git config --global --add safe.directory ${{ secrets.DEPLOY_DIR }}
             git pull origin main
           EOF
