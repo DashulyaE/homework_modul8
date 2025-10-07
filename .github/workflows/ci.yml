@@ -55,7 +55,7 @@ jobs:
 
       - name: Run migrations
         run: |
-          export DJANGO_SECRET_KEY=${{ secrets.SECRET_KEY }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
           python manage.py migrate
 
       - name: Run tests
