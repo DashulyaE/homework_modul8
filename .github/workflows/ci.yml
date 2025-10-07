@@ -1,49 +1,91 @@
-name: Django CI
-on: [push, pull_request]
+name: Django CI/CD
+
+on:
+  push:
+    branches:
+      - main
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: ${{ secrets.DB_NAME }}
+          POSTGRES_USER: ${{ secrets.DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+    env:
+      PYTHON_VERSION: 3.13
+
     steps:
-      - name: Check out code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build Docker image
-        run: |
-          docker build -t myapp:latest .
-
-      - name: Run lint inside Docker
-        run: |
-          docker run --rm -v ${{ github.workspace }}:/app myapp:latest poetry run flake8 .
-        continue-on-error: true
-
-      - name: Run tests inside Docker
-        run: |
-              docker run --rm -v ${{ github.workspace }}:/app \
-              -e SECRET_KEY=${{ secrets.SECRET_KEY }} \
-              myapp:latest poetry run python manage.py test
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      - name: Set up Python
+        uses: actions/setup-python@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Tag and push Docker image
+      - name: Install dependencies
         run: |
-          docker tag myapp:latest ${{ secrets.DOCKER_USERNAME }}/hab:${{ github.sha }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/hab:${{ github.sha }}
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --no-root
 
-      - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.5.4
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5432; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Run migrations
+        run: |
+          python manage.py migrate
+
+      - name: Run tests
+        run: |
+          python manage.py test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
-      - name: Deploy to server
+      - name: Deploy to remote server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            docker push ${{ secrets.DOCKER_USERNAME }}/hab:${{ github.sha }}
-            docker stop hab || true
-            docker rm hab || true
-            docker run -d --name hab -p 80:8000 ${{ secrets.DOCKER_USERNAME }}/hab:${{ github.sha }}
-          EOF
+            set -e
+            echo "Starting deployment..."
+            # Обновление кода на сервере
+            cd ${{ secrets.DEPLOY_DIR }}
+            git pull origin main
+
+            # Обновление виртуального окружения и зависимостей
+            source venv/bin/activate
+            poetry install --no-root
