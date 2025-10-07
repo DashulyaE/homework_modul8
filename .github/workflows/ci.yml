@@ -97,11 +97,11 @@ jobs:
 
       - name: Deploy to remote server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
             set -e
             echo "Starting deployment..."
+            sudo chown -R $(whoami) ${{ secrets.DEPLOY_DIR }}
             cd ${{ secrets.DEPLOY_DIR }}
-            chmod -R u+rwX ${{ secrets.DEPLOY_DIR }}
-            git config --global --add safe.directory ${{ secrets.DEPLOY_DIR }}
-            git pull
+            git pull origin main
+            # ваши команды перезапуска сервиса или контейнера
           EOF
