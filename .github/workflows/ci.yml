@@ -53,6 +53,13 @@ jobs:
             sleep 2
           done
 
+      - name: Run migrations
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        run: |
+          python manage.py makemigrations
+          python manage.py migrate
+
       - name: Run tests
         env:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
