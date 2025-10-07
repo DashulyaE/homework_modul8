@@ -102,9 +102,4 @@ jobs:
             echo "Starting deployment..."
             cd ${{ secrets.DEPLOY_DIR }}
             git pull origin main
-            # Перезапуск сервиса или контейнера
-            # Например:
-            # sudo systemctl restart my_django_service
-            # или
-            # docker-compose down && docker-compose up -d
           EOF
