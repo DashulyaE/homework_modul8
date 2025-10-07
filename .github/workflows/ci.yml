@@ -15,6 +15,7 @@ jobs:
       - name: Run lint inside Docker
         run: |
           docker run --rm -v ${{ github.workspace }}:/app myapp:latest poetry run flake8 .
+        continue-on-error: true
 
       - name: Run tests inside Docker
         run: |

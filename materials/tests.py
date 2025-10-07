@@ -149,7 +149,7 @@ class SubscriptionViewTest(APITestCase):
     def test_subscribe_to_course(self):
         url = reverse("materials:course-subscribe", args=(self.course.pk,))
         response = self.client.post(url)
-        data = response.json()
+        # data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["message"], "подписка добавлена")
         self.assertTrue(
