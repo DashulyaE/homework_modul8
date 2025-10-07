@@ -18,13 +18,10 @@ services:
     restart: unless-stopped
 
   nginx:
-    build:
-      context: ./nginx
+    build: ./nginx
+    container_name: nginx_proxy
     ports:
       - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - static_volume:/app/staticfiles
     depends_on:
       - web
 
@@ -72,4 +69,3 @@ services:
 
 volumes:
   postgres_data:
-  static_volume:
