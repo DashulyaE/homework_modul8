@@ -101,7 +101,7 @@ jobs:
             set -e
             echo "Starting deployment..."
             cd ${{ secrets.DEPLOY_DIR }}
-            chmod -R u+rwX ${{ secrets.DEPLOY_DIR }}
+            sudo chmod -R u+rwX ${{ secrets.DEPLOY_DIR }}
             git config --global --add safe.directory ${{ secrets.DEPLOY_DIR }}
             git pull
           EOF
