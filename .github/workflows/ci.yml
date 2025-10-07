@@ -7,17 +7,15 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-      - name: Set up Python via Docker
+      - name: Run lint inside Python 3.13 container
         uses: addnab/docker-run-action@v3
         with:
           image: python:3.13
           options: --entrypoint ""
-      - name: Install Poetry
+      - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install poetry
-      - name: Install dependencies
-        run: |
           poetry config virtualenvs.create false
           poetry install --no-interaction --no-ansi --no-root
       - name: Run Flake8
@@ -44,17 +42,15 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-      - name: Set up Python via Docker
+      - name: Run tests inside Python 3.13 container
         uses: addnab/docker-run-action@v3
         with:
           image: python:3.13
           options: --entrypoint ""
-      - name: Install Poetry
+      - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install poetry
-      - name: Install dependencies
-        run: |
           poetry config virtualenvs.create false
           poetry install --no-interaction --no-ansi --no-root
       - name: Run tests
