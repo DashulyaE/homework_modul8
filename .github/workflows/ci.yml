@@ -113,7 +113,7 @@ jobs:
             EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
             EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
             EOL
-          
+
             sudo chmod 600 .env
             sudo chmod -R u+rwX ${{ secrets.DEPLOY_DIR }}
             git config --global --add safe.directory ${{ secrets.DEPLOY_DIR }}
