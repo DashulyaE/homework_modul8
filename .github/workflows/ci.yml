@@ -104,4 +104,5 @@ jobs:
             sudo chmod -R u+rwX ${{ secrets.DEPLOY_DIR }}
             git config --global --add safe.directory ${{ secrets.DEPLOY_DIR }}
             git pull
+            docker compose down && docker compose up -d
           EOF
