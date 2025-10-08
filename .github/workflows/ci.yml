@@ -102,11 +102,11 @@ jobs:
             echo "Starting deployment..."
             cd ${{ secrets.DEPLOY_DIR }}
             cat > .env << EOL
-              DB_NAME=${{ secrets.NAME }}
-              DB_USER=${{ secrets.USER }}
-              DB_PASSWORD=${{ secrets.PASSWORD }}
-              DB_HOST=${{ secrets.HOST }}
-              DB_PORT=${{ secrets.PORT }}
+              NAME=${{ secrets.NAME }}
+              USER=${{ secrets.USER }}
+              PASSWORD=${{ secrets.PASSWORD }}
+              HOST=${{ secrets.HOST }}
+              PORT=${{ secrets.PORT }}
               SECRET_KEY=${{ secrets.SECRET_KEY }}
               STRIPE_API_KEY=${{ secrets.STRIPE_API_KEY }}
               CELERY_BROKER_URL=${{ secrets.CELERY_BROKER_URL }}
