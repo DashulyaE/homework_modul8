@@ -102,16 +102,16 @@ jobs:
             echo "Starting deployment..."
             cd ${{ secrets.DEPLOY_DIR }}
             cat > .env << EOL
-              NAME=${{ secrets.NAME }}
-              USER=${{ secrets.USER }}
-              PASSWORD=${{ secrets.PASSWORD }}
-              HOST=${{ secrets.HOST }}
-              PORT=${{ secrets.PORT }}
-              SECRET_KEY=${{ secrets.SECRET_KEY }}
-              STRIPE_API_KEY=${{ secrets.STRIPE_API_KEY }}
-              CELERY_BROKER_URL=${{ secrets.CELERY_BROKER_URL }}
-              EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
-              EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
+            NAME=${{ secrets.NAME }}
+            USER=${{ secrets.USER }}
+            PASSWORD=${{ secrets.PASSWORD }}
+            HOST=${{ secrets.HOST }}
+            PORT=${{ secrets.PORT }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            STRIPE_API_KEY=${{ secrets.STRIPE_API_KEY }}
+            CELERY_BROKER_URL=${{ secrets.CELERY_BROKER_URL }}
+            EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
+            EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
             EOL
           
             sudo chmod 600 .env
