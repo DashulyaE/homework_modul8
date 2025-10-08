@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: my_django_container
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    command: ["poetry", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+  nginx:
+    build: ./nginx
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+
+  db:
+    image: postgres:13
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: ${NAME}
+      POSTGRES_USER: ${USER}
+      POSTGRES_PASSWORD: ${PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+  redis:
+    image: redis:7
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+
+  celery_worker:
+    build: .
+    container_name: celery_worker
+    env_file: .env
+    depends_on:
+      - redis
+      - db
+    command: ["poetry", "run", "celery", "-A", "config", "worker", "--loglevel=info"]
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+  celery_beat:
+    build: .
+    container_name: celery_beat
+    env_file: .env
+    depends_on:
+      - redis
+      - db
+    command: ["poetry", "run", "celery", "-A", "config", "beat", "--loglevel=info"]
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

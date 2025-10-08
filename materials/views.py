@@ -18,6 +18,7 @@ from materials.serializers import (
     LessonSerializer,
     CourseDetailSerializer,
 )
+from materials.tasks import send_update_curse
 from users.permissions import IsModer, IsOwner
 
 
@@ -36,10 +37,16 @@ class СourseViewSet(ModelViewSet):
         course.owner = self.request.user
         course.save()
 
+    def perform_update(self, serializer):
+        course = serializer.save()
+        subscriptions = CourseSubscription.objects.filter(course=course)
+        for sub in subscriptions:
+            send_update_curse.delay(sub.user.email, course.name)
+
     def get_permissions(self):
         if self.action == "create":
             self.permission_classes = (~IsModer,)
-        elif self.action in ["update", "retrive"]:
+        elif self.action in ["update", "retrieve"]:
             self.permission_classes = (IsModer | IsOwner,)
         elif self.action == "destroy":
             self.permission_classes = (~IsModer | IsOwner,)
@@ -91,11 +98,11 @@ class CourseSubscriptionView(APIView):
         if subs_item.exists():
             # Удаляем подписку
             subs_item.delete()
-            message = 'подписка удалена'
+            message = "подписка удалена"
         else:
             # Создаем подписку
             CourseSubscription.objects.create(user=user, course=course_item)
-            message = 'подписка добавлена'
+            message = "подписка добавлена"
 
         return Response({"message": message})
 
@@ -105,7 +112,7 @@ class CourseSubscriptionView(APIView):
         subs_item = CourseSubscription.objects.filter(user=user, course=course_item)
         if subs_item.exists():
             subs_item.delete()
-            message = 'подписка удалена'
+            message = "подписка удалена"
         else:
-            message = 'подписка не найдена'
+            message = "подписка не найдена"
         return Response({"message": message})

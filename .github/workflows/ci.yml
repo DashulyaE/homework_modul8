@@ -1,0 +1,130 @@
+name: Django CI/CD
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: ${{ secrets.NAME }}
+          POSTGRES_USER: ${{ secrets.USER }}
+          POSTGRES_PASSWORD: ${{ secrets.PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+    env:
+      PYTHON_VERSION: 3.13
+      NAME: ${{ secrets.NAME }}
+      USER: ${{ secrets.USER }}
+      PASSWORD: ${{ secrets.PASSWORD }}
+      HOST: ${{ secrets.HOST }}  # или localhost
+      PORT: ${{ secrets.PORT }}  # например, 5432
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+      CELERY_BROKER_URL: ${{ secrets.CELERY_BROKER_URL }}
+      EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+      EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --no-root
+
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h $HOST -p $PORT; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Make migrations
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          NAME: ${{ secrets.NAME }}
+          USER: ${{ secrets.USER }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          HOST: ${{ secrets.HOST }}
+          PORT: ${{ secrets.PORT }}
+        run: |
+          python manage.py makemigrations --noinput
+          python manage.py migrate --noinput
+
+      - name: Run tests
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        run: |
+          python manage.py test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Deploy to remote server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          set -e
+          # Начинается без отступов
+          echo "Starting deployment..."
+          cd ${{ secrets.DEPLOY_DIR }}
+          # Создаем файл .env
+          cat > .env << EOL
+          NAME=${{ secrets.NAME }}
+          USER=${{ secrets.USER }}
+          PASSWORD=${{ secrets.PASSWORD }}
+          HOST=${{ secrets.HOST }}
+          PORT=${{ secrets.PORT }}
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          STRIPE_API_KEY=${{ secrets.STRIPE_API_KEY }}
+          CELERY_BROKER_URL=${{ secrets.CELERY_BROKER_URL }}
+          EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
+          EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
+          EOL
+          
+          # Устанавливаем права
+          sudo chmod 600 .env
+          sudo chmod -R u+rwX ${{ secrets.DEPLOY_DIR }}
+          
+          # Настраиваем git
+          git config --global --add safe.directory ${{ secrets.DEPLOY_DIR }}
+          
+          # Обновляем проект
+          git pull
+          
+          # Запускаем контейнеры
+          docker compose --env-file .env up -d
+          EOF
