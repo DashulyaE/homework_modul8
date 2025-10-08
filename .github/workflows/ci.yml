@@ -101,26 +101,23 @@ jobs:
             set -e
             echo "Starting deployment..."
             cd ${{ secrets.DEPLOY_DIR }}
-# Создаем .env файл с переменными из секретов
             cat > .env << EOL
-            NAME=${{ secrets.NAME }}
-            USER=${{ secrets.USER }}
-            PASSWORD=${{ secrets.PASSWORD }}
-            HOST=${{ secrets.HOST }}
-            PORT=${{ secrets.PORT }}
-            SECRET_KEY=${{ secrets.SECRET_KEY }}
-            STRIPE_API_KEY=${{ secrets.STRIPE_API_KEY }}
-            CELERY_BROKER_URL=${{ secrets.CELERY_BROKER_URL }}
-            EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
-            EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
-          EOL
-    
+              DB_NAME=${{ secrets.NAME }}
+              DB_USER=${{ secrets.USER }}
+              DB_PASSWORD=${{ secrets.PASSWORD }}
+              DB_HOST=${{ secrets.HOST }}
+              DB_PORT=${{ secrets.PORT }}
+              SECRET_KEY=${{ secrets.SECRET_KEY }}
+              STRIPE_API_KEY=${{ secrets.STRIPE_API_KEY }}
+              CELERY_BROKER_URL=${{ secrets.CELERY_BROKER_URL }}
+              EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
+              EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
+            EOL
+          
             sudo chmod 600 .env
-      
             sudo chmod -R u+rwX ${{ secrets.DEPLOY_DIR }}
             git config --global --add safe.directory ${{ secrets.DEPLOY_DIR }}
-   
-            git pull origin main
+            git pull
 
-            docker-compose --env-file .env up -d
+            docker compose --env-file .env up -d
           EOF
