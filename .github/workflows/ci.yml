@@ -101,6 +101,7 @@ jobs:
             set -e
             echo "Starting deployment..."
             cd ${{ secrets.DEPLOY_DIR }}
+            # Создаем файл .env
             cat > .env << EOL
             NAME=${{ secrets.NAME }}
             USER=${{ secrets.USER }}
@@ -118,6 +119,5 @@ jobs:
             sudo chmod -R u+rwX ${{ secrets.DEPLOY_DIR }}
             git config --global --add safe.directory ${{ secrets.DEPLOY_DIR }}
             git pull
-
             docker compose --env-file .env up -d
           EOF
