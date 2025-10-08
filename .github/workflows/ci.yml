@@ -98,26 +98,33 @@ jobs:
       - name: Deploy to remote server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            set -e
-            echo "Starting deployment..."
-            cd ${{ secrets.DEPLOY_DIR }}
-            # Создаем файл .env
-            cat > .env << EOL
-            NAME=${{ secrets.NAME }}
-            USER=${{ secrets.USER }}
-            PASSWORD=${{ secrets.PASSWORD }}
-            HOST=${{ secrets.HOST }}
-            PORT=${{ secrets.PORT }}
-            SECRET_KEY=${{ secrets.SECRET_KEY }}
-            STRIPE_API_KEY=${{ secrets.STRIPE_API_KEY }}
-            CELERY_BROKER_URL=${{ secrets.CELERY_BROKER_URL }}
-            EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
-            EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
-            EOL
+set -e
+echo "Starting deployment..."
+cd ${{ secrets.DEPLOY_DIR }}
+# Создаем файл .env
+cat > .env << EOL
+NAME=${{ secrets.NAME }}
+USER=${{ secrets.USER }}
+PASSWORD=${{ secrets.PASSWORD }}
+HOST=${{ secrets.HOST }}
+PORT=${{ secrets.PORT }}
+SECRET_KEY=${{ secrets.SECRET_KEY }}
+STRIPE_API_KEY=${{ secrets.STRIPE_API_KEY }}
+CELERY_BROKER_URL=${{ secrets.CELERY_BROKER_URL }}
+EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
+EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
+EOL
 
-            sudo chmod 600 .env
-            sudo chmod -R u+rwX ${{ secrets.DEPLOY_DIR }}
-            git config --global --add safe.directory ${{ secrets.DEPLOY_DIR }}
-            git pull
-            docker compose --env-file .env up -d
-          EOF
+# Устанавливаем права
+sudo chmod 600 .env
+sudo chmod -R u+rwX ${{ secrets.DEPLOY_DIR }}
+
+# Настраиваем git
+git config --global --add safe.directory ${{ secrets.DEPLOY_DIR }}
+
+# Обновляем проект
+git pull
+
+# Запускаем контейнеры
+docker compose --env-file .env up -d
+EOF
